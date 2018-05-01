@@ -14,7 +14,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='jsonkv',  # Required
 
-    version='1.1.3',  # Required
+    version='1.1.5',  # Required
 
     description='Use JSON file as KV store easily',
 

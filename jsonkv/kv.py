@@ -7,9 +7,10 @@ from datetime import date, datetime
 
 
 class JsonKV(object):
-    def __init__(self, path: str, mode: str = 'r+'):
+    def __init__(self, path: str, mode: str = 'r+', dumps_kwargs=None):
         self.path = path
         self.mode = mode
+        self.dumps_kwargs = dumps_kwargs
         self.data = {}
 
     def __enter__(self):
@@ -27,7 +28,7 @@ class JsonKV(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.save()
-        self.f.close()
+        self.close()
 
     def __getitem__(self, item):
         if item in self.data:
@@ -39,10 +40,13 @@ class JsonKV(object):
     def __iter__(self):
         return dict.__iter__(self.data)
 
-    def save(self, indent=None):
+    def save(self):
         if self.f.writable():
             self.f.seek(0)
-            self.f.write(json.dumps(self.data, ensure_ascii=False, indent=indent, default=self.json_serial))
+            self.f.write(json.dumps(self.data, ensure_ascii=False, default=self.json_serial, **(self.dumps_kwargs or {})))
+
+    def close(self):
+        self.f.close()
 
     def restore(self):
         self.data = deepcopy(self.origin_data)

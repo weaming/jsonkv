@@ -1,3 +1,7 @@
 .idea/
 test.json
 *.pyc
+.ropeproject/
+build/
+dist/
+jsonkv.egg-info/

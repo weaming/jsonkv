@@ -23,6 +23,7 @@ class JsonKV(object):
         except json.decoder.JSONDecodeError as e:
             print('Warning: {}'.format(e))
         self.origin_data = deepcopy(self.data)
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.save()

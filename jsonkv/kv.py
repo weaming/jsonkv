@@ -5,30 +5,42 @@ from copy import deepcopy
 import os
 from datetime import date, datetime
 
+from .filelock import FileLock, FileLockException
+
 
 class JsonKV(object):
-    def __init__(self, path: str, mode: str = 'r+', dumps_kwargs=None):
+    def __init__(self, path: str, mode: str = "r+", dumps_kwargs=None):
         self.path = path
         self.mode = mode
         self.dumps_kwargs = dumps_kwargs
         self.data = {}
+        self.file_lock = FileLock(self.path)
 
     def __enter__(self):
+        try:
+            self.file_lock.acquire()
+        except FileLockException as e:
+            raise FileLockException(
+                f"json file is locked, try remove {self.file_lock.lockfile}"
+            )
+
         if not os.path.isfile(self.path):
-            open(self.path, 'w').close()
+            open(self.path, "w").close()
 
         self.f = open(self.path, self.mode)
         try:
             content = self.f.read()
             self.data = json.loads(content)
         except json.decoder.JSONDecodeError as e:
-            print('Warning: {}'.format(e))
+            # print('Warning: {}'.format(e))
+            pass
         self.origin_data = deepcopy(self.data)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.save()
         self.close()
+        self.file_lock.release()
 
     def __getitem__(self, item):
         if item in self.data:
@@ -43,7 +55,14 @@ class JsonKV(object):
     def save(self):
         if self.f.writable():
             self.f.seek(0)
-            self.f.write(json.dumps(self.data, ensure_ascii=False, default=self.json_serial, **(self.dumps_kwargs or {})))
+            self.f.write(
+                json.dumps(
+                    self.data,
+                    ensure_ascii=False,
+                    default=self.json_serial,
+                    **(self.dumps_kwargs or {}),
+                )
+            )
 
     def close(self):
         self.f.close()
@@ -56,8 +75,8 @@ class JsonKV(object):
         """JSON serializer for objects not serializable by default json code"""
 
         if isinstance(obj, datetime):
-            return obj.strftime('%Y-%m-%d %X')
+            return obj.strftime("%Y-%m-%d %X")
         elif isinstance(obj, date):
-            return obj.strftime('%Y-%m-%d')
+            return obj.strftime("%Y-%m-%d")
 
         raise TypeError("Type %s not serializable" % type(obj))

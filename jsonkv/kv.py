@@ -54,6 +54,7 @@ class JsonKV(object):
 
     def save(self):
         if self.f.writable():
+            self.f.truncate(0)
             self.f.seek(0)
             self.f.write(
                 json.dumps(

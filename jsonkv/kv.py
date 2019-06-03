@@ -9,9 +9,10 @@ from .filelock import FileLock, FileLockException
 
 
 class JsonKV(object):
-    def __init__(self, path: str, mode: str = "r+", dumps_kwargs=None):
+    def __init__(self, path: str, mode: str = "r+", dumps_kwargs=None, encoding='utf8'):
         self.path = path
         self.mode = mode
+        self.encoding = encoding
         self.dumps_kwargs = dumps_kwargs
         self.data = {}
         self.file_lock = FileLock(self.path)
@@ -27,7 +28,7 @@ class JsonKV(object):
         if not os.path.isfile(self.path):
             open(self.path, "w").close()
 
-        self.f = open(self.path, self.mode)
+        self.f = open(self.path, self.mode, encoding=self.encoding)
         try:
             content = self.f.read()
             self.data = json.loads(content)

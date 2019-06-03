@@ -16,7 +16,7 @@ def read_text(fname):
 
 setup(
     name="jsonkv",  # Required
-    version="1.1.7",  # Required
+    version="1.1.8",  # Required
     description="Use JSON file as KV store easily",
     long_description=read_text("README.md"),  # Optional
     long_description_content_type="text/markdown",  # Optional (see note above)

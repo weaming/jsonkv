@@ -58,7 +58,7 @@ class FileLock(object):
         """
         if self.is_locked:
             os.close(self.fd)
-            os.unlink(self.lockfile)
+            os.remove(self.lockfile)
             self.is_locked = False
 
     def __enter__(self):

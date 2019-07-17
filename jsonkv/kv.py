@@ -9,7 +9,7 @@ from .filelock import FileLock, FileLockException
 
 
 class JsonKV(object):
-    def __init__(self, path: str, mode: str = "r+", dumps_kwargs=None, encoding='utf8', no_lock=False):
+    def __init__(self, path: str, mode: str = "r+", dumps_kwargs=None, encoding='utf8', no_lock=False, release_force=False):
         self.path = path
         self.mode = mode
         self.encoding = encoding
@@ -17,15 +17,20 @@ class JsonKV(object):
         self.no_lock = no_lock
         self.data = {}
         self.file_lock = FileLock(self.path)
+        self.release_force = release_force
 
     def __enter__(self):
         if not self.no_lock:
             try:
                 self.file_lock.acquire()
             except FileLockException as e:
-                raise FileLockException(
-                    f"json file is locked, try remove {self.file_lock.lockfile}"
-                )
+                if self.release_force:
+                    self.file_lock.release()
+                    self.file_lock.acquire()
+                else:
+                    raise FileLockException(
+                        f"json file is locked, try remove {self.file_lock.lockfile}"
+                    )
 
         if not os.path.isfile(self.path):
             open(self.path, "w").close()

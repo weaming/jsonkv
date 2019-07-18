@@ -10,7 +10,7 @@ class FileLockException(Exception):
     pass
 
 
-class FileLock(object):
+class FileLock:
     """ A file locking mechanism that has context-manager support so
         you can use it in a with statement. This should be relatively cross
         compatible as it doesn't rely on msvcrt or fcntl for the locking.
@@ -23,10 +23,13 @@ class FileLock(object):
         if timeout is not None and delay is None:
             raise ValueError("If timeout is not None, then delay must not be None.")
         self.is_locked = False
-        self.lockfile = os.path.join(file_name + '.lock')
+        self.lockfile = os.path.join(file_name + ".lock")
         self.file_name = file_name
         self.timeout = timeout
         self.delay = delay
+
+        # runtime
+        self.fd = None
 
     def acquire(self):
         """ Acquire the lock, if possible. If the lock is in use, it check again
